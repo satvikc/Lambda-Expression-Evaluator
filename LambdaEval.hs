@@ -15,7 +15,7 @@ free :: String->Expr->Bool
 free a e = Set.member a $ freeVariable e
 
 etaReduction :: Expr->Expr
-etaReduction f@(L a (Ap e (V b))) = if a==b && not $ free a e then e else f
+etaReduction f@(L a (Ap e (V b))) = if a==b && not (free a e) then e else f
 etaReduction x = x
 
 nextChar :: Char->Char
@@ -35,9 +35,10 @@ vReplace t a (V b) | a==b = t
 vReplace f@(V t) a b = if a==t then b else f
 vReplace (Ap e1 e2) a b = Ap (vReplace e1 a b) (vReplace e2 a b)
 vReplace f@(L t e) a b | t == a = f
-vReplace (L t e) a b | free t b = let t' = newString  (Set.toList $ freeVariable b) ""
-                                      e' = vReplace e t (V t') in L t' $ vReplace e' a b
-                     | otherwise = L t $ vReplace e a b
+                       | free t b = let t' = newString  (Set.toList $ freeVariable b) ""
+                                        e' = vReplace e t (V t') 
+                                            in L t' $ vReplace e' a b
+                       | otherwise = L t $ vReplace e a b
 
 lambdaEval :: Expr -> Expr
 lambdaEval f@(V a) = f
